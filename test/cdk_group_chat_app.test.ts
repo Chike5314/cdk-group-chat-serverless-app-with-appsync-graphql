@@ -1,17 +1,33 @@
-// import * as cdk from 'aws-cdk-lib/core';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as CdkGroupChatApp from '../lib/cdk_group_chat_app-stack';
+import * as cdk from "aws-cdk-lib";
+import { Template } from "aws-cdk-lib/assertions";
+import { GroupChatStack } from "../lib/cdk_group_chat_app-stack";
+import { GroupStacks } from "../lib/group-stack";
+import { MessageStack } from "../lib/message-stack";
+import { UserStack } from "../lib/user-stack";
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/cdk_group_chat_app-stack.ts
-test('SQS Queue Created', () => {
-//   const app = new cdk.App();
-//     // WHEN
-//   const stack = new CdkGroupChatApp.CdkGroupChatAppStack(app, 'MyTestStack');
-//     // THEN
-//   const template = Template.fromStack(stack);
+test("synthesizes all group chat stacks and their resources", () => {
+  const app = new cdk.App();
+  const groupChatStack = new GroupChatStack(app, "GroupChatStack", {
+    env: { account: "123456789012", region: "us-east-1" },
+  });
+  const sharedProps = {
+    env: { account: groupChatStack.account, region: groupChatStack.region },
+    groupChatTable: groupChatStack.groupChatTable,
+    groupChatGraphqlApi: groupChatStack.groupChatGraphqlApi,
+  };
+  const groupStack = new GroupStacks(app, "GroupStacks", sharedProps);
+  const userStack = new UserStack(app, "UserStacks", sharedProps);
+  const messageStack = new MessageStack(app, "MessageStack", sharedProps);
 
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
-//   });
+  Template.fromStack(groupChatStack).resourceCountIs(
+    "AWS::DynamoDB::Table",
+    1
+  );
+  Template.fromStack(groupChatStack).resourceCountIs(
+    "AWS::AppSync::Resolver",
+    4
+  );
+  Template.fromStack(groupStack).resourceCountIs("AWS::AppSync::Resolver", 6);
+  Template.fromStack(userStack).resourceCountIs("AWS::AppSync::Resolver", 4);
+  Template.fromStack(messageStack).resourceCountIs("AWS::AppSync::Resolver", 1);
 });
