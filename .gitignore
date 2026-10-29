@@ -1,5 +1,7 @@
 *.js
 !jest.config.js
+!resolvers/**/*.js
+!lib/js_resolvers/**/*.js
 *.d.ts
 node_modules
 .env
