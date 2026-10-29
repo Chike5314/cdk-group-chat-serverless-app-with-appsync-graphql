@@ -34,7 +34,7 @@ jobs:
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          role-to-assume: arn:aws:iam::400294419066:role/CdkOidcDeployPolicy
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Deploy all CDK stacks
